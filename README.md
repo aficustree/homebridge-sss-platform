@@ -10,7 +10,12 @@ A dynamic platform-style homebridge plugin to expose cameras registered to the S
 
 ## Configuration
 
-see [sample configuration](https://github.com/aficustree/homebridge-sss-platform/blob/master/sample-config.json)
+see [sample configuration](./sample-config.json) for the homebridge side configuration
+
+for the configuration of the synology survilence station:
+1. Log into the survillence station console
+2. Create an action rule to trigger on 'motion detected'
+3. Set the action to 'external device' and use `http://yourhost:yourport/?varname=cameraname` as tagged in the homebridge configuration.
 
 ## License
 

@@ -19,7 +19,9 @@
     "type": "git",
     "url": "https://github.com/aficustree/homebridge-sss-platform.git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "debug": "^3.0.0"
+  },
   "readmeFilename": "README.md",
   "bugs": {
     "url": "https://github.com/aficustree/homebridge-sss-platform/issues"
