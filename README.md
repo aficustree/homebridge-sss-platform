@@ -2,7 +2,7 @@
 
 **NOTE: This is a non-working plug-in at this time, DO NOT USE**
 
-A dynamic platform-style homebridge plugin to expose cameras registered to the Synology Survillence Station as homekit compatible cameras and motion sensors. By leveraging the motion detection features of the Synology Survillence Station, if both the camera and sensor accessory are placed in the same room, Homekit will provide 'rich' notification when the Synology detects motion. 
+A dynamic platform-style homebridge plugin to expose cameras registered to the Synology Survillence Station as homekit motion sensors. By leveraging the motion detection features of the Synology Survillence Station, if both the camera and sensor accessory are placed in the same room, Homekit will provide 'rich' notification when the Synology detects motion. 
 
 ## Installation
 

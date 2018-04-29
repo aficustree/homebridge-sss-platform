@@ -12,6 +12,13 @@
         {
             "platform" : "sss-platform",
             "name" : "Synology Camera System",
+            "port" : 8888,
+            "cameras" : [
+                {"name":"Backyard Motion","querystring":"backyard"},
+                {"name":"Front Door Motion","querystring":"frontdoor"},
+                {"name":"Driveway Motion","querystring":"driveway"},
+                {"name":"Nursery Motion","querystring":"nursery"}
+            ]
         }
     ]
 }

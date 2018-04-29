@@ -1,0 +1,31 @@
+{
+  "name": "homebridge-sss-platform",
+  "version": "0.0.1",
+  "description": "An http-based hombridge platform for the Synology Survillence Station exposing cameras as motion sensors",
+  "license": "Apache-2.0",
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "homekit",
+    "synology",
+    "survillence station"
+  ],
+  "engines": {
+    "node": ">=8.0.0",
+    "homebridge": ">=0.2.0"
+  },
+  "author": "Shaun Baker",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aficustree/homebridge-sss-platform.git"
+  },
+  "dependencies": {},
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/aficustree/homebridge-sss-platform/issues"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
