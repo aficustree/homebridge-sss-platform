@@ -1,7 +1,5 @@
 # homebridge-sss-platform
 
-**NOTE: This is a non-working plug-in at this time, DO NOT USE**
-
 A dynamic platform-style homebridge plugin to expose cameras registered to the Synology Survillence Station as homekit motion sensors. By leveraging the motion detection features of the Synology Survillence Station, if both the camera and sensor accessory are placed in the same room, Homekit will provide 'rich' notification when the Synology detects motion. 
 
 ## Installation
@@ -11,6 +9,8 @@ A dynamic platform-style homebridge plugin to expose cameras registered to the S
 3. Update your configuration file. See [sample-config.json](./sample-config.json) in this repository for a sample. 
 
 ## Configuration
+
+see [sample configuration](https://github.com/aficustree/homebridge-sss-platform/blob/master/sample-config.json)
 
 ## License
 
