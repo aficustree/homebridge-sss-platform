@@ -17,6 +17,8 @@ for the configuration of the synology survilence station:
 2. Create an action rule to trigger on 'motion detected'
 3. Set the action to 'external device' and use `http://yourhost:yourport/?varname=cameraname` as tagged in the homebridge configuration.
 
+You can see an example of this configuration in (issue #1)[https://github.com/aficustree/homebridge-sss-platform/issues/1]
+
 ## License
 
 Copyright 2018, [aficustree](https://github.com/aficustree)
