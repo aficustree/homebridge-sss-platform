@@ -1,0 +1,40 @@
+{
+	"pluginAlias": "sss-platform",
+	"pluginType": "platform",
+	"schema": {
+		"type": "object",
+		"properties": {
+			"name": {
+				"title": "Name",
+				"type": "string",
+				"required": true,
+				"default": "Synology Camera System"
+			},
+			"port": {
+				"title": "TCPIP-Port",
+				"type": "integer",
+				"required": true,
+				"default": 8888,
+        		"maximum": 65535
+			},
+			"timeout": {
+				"title": "Timeout",
+				"type": "integer",
+				"required": true,
+				"default": 30,
+        		"maximum": 120
+			},
+			"cameras": {
+                "type": "array",
+                "title": "List of Cameras",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string", "title": "Camera Name", "default": "Backyard camera" },
+                        "varname": { "type": "string", "title": "Varname", "default": "backyard"}
+                  }
+                }
+            }
+	    }
+    }
+}
