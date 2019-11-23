@@ -19,6 +19,13 @@ for the configuration of the synology survilence station:
 
 You can see an example of this configuration in [issue #1](https://github.com/aficustree/homebridge-sss-platform/issues/1)
 
+### options
+#### timeout
+waiting time for triggered events to turn off
+
+#### resttime
+waiting (cool down) time for next triggered event to occor
+
 ## License
 
 Copyright 2018, [aficustree](https://github.com/aficustree)
