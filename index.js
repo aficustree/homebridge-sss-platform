@@ -27,7 +27,7 @@ class MotionSensor {
         this.lastTriggerOn = 0;
     }
     turnOnNow() {
-        if (this.debug) this.debug(`turn on now sensor ${this.accessory.displayName}[${this.varname}] ...`);
+        if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] turn on now ...`);
         this.faulted = true;
         this.accessory.getService(Service.MotionSensor)
             .updateCharacteristic(Characteristic.MotionDetected, true);
@@ -40,19 +40,22 @@ class MotionSensor {
      * @returns {boolean} did turn on
      */
     turnOnIfNotJustOff(for_ms) {
+        // last on count
+        let timeSinceLastTrigger = Date.now() - this.lastTriggerOn;
+        this.lastTriggerOn = Date.now();
+        if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] triggered attempt to turn on since last has passed: ${timeSinceLastTrigger} ms.`);
+
         let timeSinceLastOff = Date.now() - this.lastTurnOffTime;
         if(timeSinceLastOff >=  for_ms){
             this.turnOnNow()
         }else{
-            if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] just turn off for ${Math.ceil(timeSinceLastOff/1000)} seconds, wait until configured ${for_ms} ms ...`);
+            if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] won't turn on bacuase just turn off for ${timeSinceLastOff} ms, wait until configured ${for_ms} ms ...`);
         }
-        let timeSinceLastTrigger = Date.now() - this.lastTriggerOn;
-        this.lastTriggerOn = Date.now();
-        if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}]  triggered on since last has passed: ${timeSinceLastTrigger} ms.`);
+
         return timeSinceLastOff >= for_ms;
     }
     turnOffNow() {
-        if (this.debug) this.debug(`timeout reached for sensor ${this.accessory.displayName}[${this.varname}] clearing...`);
+        if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] timeout, clearing trigger status...`);
         this.faulted = false;
         this.accessory.getService(Service.MotionSensor)
             .updateCharacteristic(Characteristic.MotionDetected, false);
@@ -67,7 +70,7 @@ class MotionSensor {
      */
     turnOffAfter(ms) {
         if (this.timeoutTurnOff >= 0) {
-            if (this.debug) this.debug(`turnoff countdown restarted for sensor ${this.accessory.displayName}[${this.varname}] clearing...`);
+            if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] turnoff countdown restarted. pass on triggered event.`);
             clearTimeout(this.timeoutTurnOff);
         }
         this.timeoutTurnOff = setTimeout(this.turnOffNow.bind(this), ms);
