@@ -1,14 +1,15 @@
 {
   "name": "homebridge-sss-platform",
-  "version": "0.1.0",
-  "description": "An http-based homebridge platform for the Synology Surveillance Station exposing cameras as motion sensors",
+  "version": "0.1.1",
+  "description": "An http-based homebridge platform for the Synology Surveillance Station exposing cameras as motion sensors. Works with other systems capable of generating HTTP GETS in response to motion",
   "license": "Apache-2.0",
   "keywords": [
     "homebridge-plugin",
     "homebridge",
     "homekit",
     "synology",
-    "survillence station"
+    "survillence station",
+    "xeoma"
   ],
   "engines": {
     "node": ">=8.10.0",

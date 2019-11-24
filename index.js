@@ -47,7 +47,7 @@ class MotionSensor {
 
         let timeSinceLastOff = Date.now() - this.lastTurnOffTime;
         if(timeSinceLastOff >=  for_ms){
-            this.turnOnNow()
+            this.turnOnNow();
         }else{
             if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] won't turn on bacuase just turn off for ${timeSinceLastOff} ms, wait until configured ${for_ms} ms ...`);
         }
@@ -91,6 +91,10 @@ class SSSPlatform {
          * @type {number}
          */
         this.config.resttime = this.config.hasOwnProperty('resttime') ? this.config.resttime : 1;
+        /**
+         * @type {number}
+         */
+        this.config.timeout = this.config.hasOwnProperty('timeout') ? this.config.timeout : 30;
 
         this.port = this.config.port;
         /**
