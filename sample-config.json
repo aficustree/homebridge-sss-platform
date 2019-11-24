@@ -14,6 +14,7 @@
             "name" : "Synology Camera System",
             "port" : 8888,
             "timeout" : 30,
+            "resttime": 1,
             "cameras" : [
                 {"name":"Backyard Motion","varname":"backyard"},
                 {"name":"Front Door Motion","varname":"frontdoor"},
