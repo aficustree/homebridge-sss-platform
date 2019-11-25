@@ -18,17 +18,33 @@ class MotionSensor {
      * @memberof MotionSensor
      */
     constructor(varname, accessory, debug) {
-        this.varname = varname; //name that will be passed by get parameter
+        /**
+         * name that will be passed by get parameter
+         * @type {string} 
+         */
+        this.varname = varname; 
+        /**
+         * @type {Accessory} 
+         */
         this.accessory = accessory;
-        this.faulted = false;
+        /**
+         * @type {boolean}
+         */
+        this.off = false;
         this.debug = debug;
         this.timeoutTurnOff = -1;
         this.lastTurnOffTime = Date.now();
         this.lastTriggerOn = 0;
     }
+    get on(){
+        return !this.off;
+    }
+    set on(bool){
+        this.off = !bool;
+    }
     turnOnNow() {
         if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] turn on now ...`);
-        this.faulted = true;
+        this.off = true;
         this.accessory.getService(Service.MotionSensor)
             .updateCharacteristic(Characteristic.MotionDetected, true);
     }
@@ -56,7 +72,7 @@ class MotionSensor {
     }
     turnOffNow() {
         if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] timeout, clearing trigger status...`);
-        this.faulted = false;
+        this.off = false;
         this.accessory.getService(Service.MotionSensor)
             .updateCharacteristic(Characteristic.MotionDetected, false);
         this.timeoutTurnOff = -1;
@@ -169,7 +185,7 @@ class SSSPlatform {
             let sensor = this.motionsensors[i];
             if (sensor.varname == varname) {
                 found = true;
-                if (sensor.faulted)
+                if (sensor.off)
                     callback(null, 1);
                 else
                     callback(null, 0);
@@ -191,18 +207,18 @@ class SSSPlatform {
         for (let i in this.motionsensors) {
             if (this.motionsensors[i].varname == varname) {
                 sensor = this.motionsensors[i];
-                this.debug('found sensor ' + varname);
+                this.debug(`Received motion from camera ${varname}`);
                 break;
             }
         }
-        if (sensor) {
-            if (!sensor.faulted) {
-                let didTurnOn = sensor.turnOnIfNotJustOff(this.config.resttime * 1000);
-                if(didTurnOn) sensor.turnOffAfter(this.config.timeout * 1000);
-            }
-        } else {
-            this.debug(varname + ' not found for update');
+        if (!sensor){
+            this.debug(`Received motion from camera ${varname}, but no sensor configured found for update!`);
+            return;
         }
+        if (sensor.on) {
+            sensor.turnOnIfNotJustOff(this.config.resttime * 1000);
+        }
+        if(sensor.on) sensor.turnOffAfter(this.config.timeout * 1000);
     }
 
     // method called synology, validates whether all accessories already exist and loads them if they do not
@@ -250,7 +266,7 @@ class SSSPlatform {
             req.on('end', () => {
                 url = require('url').parse(req.url, true); // will parse parameters into query string
                 triggeredCamera = url.query.varname;
-                this.log('Received motion from camera ' + triggeredCamera);
+                // this.log('Received motion from camera ' + triggeredCamera);
                 if (triggeredCamera)
                     this.updateStateMotion(triggeredCamera);
                 else
