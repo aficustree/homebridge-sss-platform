@@ -20,5 +20,6 @@
 - move logics to MotionSensor class
 - move logics to MotionSensors class
 - string interpolation style
+- better log style
 
 ### [0.0.3]
