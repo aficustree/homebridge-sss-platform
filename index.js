@@ -12,17 +12,17 @@ module.exports = function (homebridge) {
 class MotionSensor {
     /**
      *Creates an instance of MotionSensor.
-     * @param {strting} varname
+     * @param {string} varname
      * @param {Accessory} accessory
-     * @param {debug} debug
+     * @param {debug.Debugger} namespaced_debug
      * @memberof MotionSensor
      */
-    constructor(varname, accessory, debug) {
+    constructor(varname, accessory, namespaced_debug) {
         /**
          * name that will be passed by get parameter
          * @type {string} 
          */
-        this.varname = varname; 
+        this.varname = varname;
         /**
          * @type {Accessory} 
          */
@@ -30,23 +30,36 @@ class MotionSensor {
         /**
          * @type {boolean}
          */
-        this.off = false;
-        this.debug = debug;
-        this.timeoutTurnOff = -1;
+        this.on = false;
+
+        let debugg = namespaced_debug || debug;
+        /**
+         * @type {debug.Debugger}
+         */
+        this.debug = debugg.extend(this.varname);
+
+        this.timeoutTurnOff = 0;
         this.lastTurnOffTime = Date.now();
         this.lastTriggerOn = 0;
+
+        this.passOnTime = 0;
+        this.passOnTimes = 0;
     }
-    get on(){
-        return !this.off;
+    get off() {
+        return !this.on;
     }
-    set on(bool){
-        this.off = !bool;
+    set off(bool) {
+        this.on = !bool;
     }
     turnOnNow() {
-        if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] turn on now ...`);
-        this.off = true;
-        this.accessory.getService(Service.MotionSensor)
-            .updateCharacteristic(Characteristic.MotionDetected, true);
+        if (this.on) {
+            this.debug(`already on, do nothing.`);
+        } else {
+            this.debug(`turn on now ...`);
+            this.on = true;
+            this.accessory.getService(Service.MotionSensor)
+                .updateCharacteristic(Characteristic.MotionDetected, true);
+        }
     }
     /**
      * Will ignore turn on command
@@ -56,27 +69,25 @@ class MotionSensor {
      * @returns {boolean} did turn on
      */
     turnOnIfNotJustOff(for_ms) {
-        // last on count
-        let timeSinceLastTrigger = Date.now() - this.lastTriggerOn;
-        this.lastTriggerOn = Date.now();
-        if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] triggered attempt to turn on since last has passed: ${timeSinceLastTrigger} ms.`);
-
         let timeSinceLastOff = Date.now() - this.lastTurnOffTime;
-        if(timeSinceLastOff >=  for_ms){
+        if (timeSinceLastOff >= for_ms) {
             this.turnOnNow()
-        }else{
-            if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] won't turn on bacuase just turn off for ${timeSinceLastOff} ms, wait until configured ${for_ms} ms ...`);
+        } else {
+            this.debug(`won't turn on bacuase just turn off for ${timeSinceLastOff} ms, wait until configured ${for_ms} ms ...`);
         }
 
         return timeSinceLastOff >= for_ms;
     }
     turnOffNow() {
-        if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] timeout, clearing trigger status...`);
-        this.off = false;
+        this.debug(`timeout, clearing trigger status... (turn off trigger) || after ${this.passOnTimes} time pass-on in ${this.passOnTime} ms`);
+        this.on = false;
         this.accessory.getService(Service.MotionSensor)
             .updateCharacteristic(Characteristic.MotionDetected, false);
-        this.timeoutTurnOff = -1;
+        this.timeoutTurnOff = 0;
         this.lastTurnOffTime = Date.now();
+
+        this.passOnTime = 0;
+        this.passOnTimes = 0;
     }
     /**
      *
@@ -85,11 +96,76 @@ class MotionSensor {
      * @memberof MotionSensor
      */
     turnOffAfter(ms) {
-        if (this.timeoutTurnOff >= 0) {
-            if (this.debug) this.debug(`sensor ${this.accessory.displayName}[${this.varname}] turnoff countdown restarted. pass on triggered event.`);
+        if (this.timeoutTurnOff == 0) {
+            this.debug(`turnoff countdown started, will turn off after ${ms} ms.`);
+        } else {
+            this.debug(`turnoff countdown restarted. Pass on triggered event, will turn off after ${ms} ms.`);
             clearTimeout(this.timeoutTurnOff);
+            // last on count
+            let timeSinceLastTrigger = Date.now() - this.lastTriggerOn;
+            this.debug(`triggered attempt to turn on (set turn off timer) since last has passed: ${timeSinceLastTrigger} ms.`);
+            this.passOnTime += timeSinceLastTrigger;
+            this.passOnTimes += 1;
         }
+        this.lastTriggerOn = Date.now();
         this.timeoutTurnOff = setTimeout(this.turnOffNow.bind(this), ms);
+    }
+}
+
+class MotionSensors {
+    constructor() {
+        /**
+         * @type {MotionSensor[]}
+         */
+        this.sensors = [];
+        /**
+         * @type {Record<string, MotionSensor[]>}
+         */
+        this.varname2sensor = {};
+        /**
+         * @type {Record<string, MotionSensor[]>}
+         */
+        this.displayName2sensor = {};
+    }
+    /**
+     *
+     *
+     * @param {MotionSensor} sensor
+     * @memberof MotionSensors
+     */
+    push(sensor) {
+        this.sensors.push(sensor);
+        if (this.varname2sensor[sensor.varname]) {
+            this.varname2sensor[sensor.varname].push(sensor);
+        } else {
+            this.varname2sensor[sensor.varname] = [sensor]
+        }
+
+        if (this.displayName2sensor[sensor.accessory.displayName]) {
+            this.displayName2sensor[sensor.accessory.displayName].push(sensor);
+        } else {
+            this.displayName2sensor[sensor.accessory.displayName] = [sensor]
+        }
+    }
+    /**
+     *
+     *
+     * @param {string} varname
+     * @returns {MotionSensor[]} 
+     * @memberof MotionSensors
+     */
+    getByVarname(varname) {
+        return this.varname2sensor[varname] || [];
+    }
+    /**
+     *
+     *
+     * @param {string} displayName
+     * @returns {MotionSensor[]} 
+     * @memberof MotionSensors
+     */
+    getByDisplayname(displayName) {
+        return this.displayName2sensor[displayName] || [];
     }
 }
 
@@ -109,10 +185,8 @@ class SSSPlatform {
         this.config.resttime = this.config.hasOwnProperty('resttime') ? this.config.resttime : 1;
 
         this.port = this.config.port;
-        /**
-         * @type {MotionSensor[]}
-         */
-        this.motionsensors = [];
+
+        this.motionsensors = new MotionSensors();
         if (api) {
             this.api = api;
             this.api.on('didFinishLaunching', () => {
@@ -156,7 +230,7 @@ class SSSPlatform {
                         this.getStateMotion(varname, callback);
                     });
                 accessory.reachable = true;
-                this.motionsensors.push(new MotionSensor(varname, accessory, this.debug));
+                this.motionsensors.push(new MotionSensor(varname, accessory, debug));
                 this.log(`New MotionSensor ${accessory.displayName}[${varname}]`)
             }
             else {
@@ -180,19 +254,16 @@ class SSSPlatform {
     }
 
     getStateMotion(varname, callback) {
-        var found = false;
-        for (let i in this.motionsensors) {
-            let sensor = this.motionsensors[i];
-            if (sensor.varname == varname) {
-                found = true;
-                if (sensor.off)
-                    callback(null, 1);
-                else
-                    callback(null, 0);
-                break;
-            }
-        }
-        if (!found) {
+        let sensors = this.motionsensors.getByVarname(varname);
+        if (sensors.length > 0) {
+            // TODO: better way to determine <???>
+            // needs to explain what is <???>
+            let sensor = sensors[0];
+            if (sensor.on)
+                callback(null, 1);
+            else
+                callback(null, 0);
+        } else {
             this.debug(varname + ' not found for get');
             callback('no sensor found', null);
         }
@@ -203,22 +274,16 @@ class SSSPlatform {
     }
 
     updateStateMotion(varname) {
-        let sensor = null;
-        for (let i in this.motionsensors) {
-            if (this.motionsensors[i].varname == varname) {
-                sensor = this.motionsensors[i];
-                this.debug(`Received motion from camera ${varname}`);
-                break;
+        let sensors = this.motionsensors.getByVarname(varname);
+        if (sensors.length == 0) {
+            this.debug(`Received motion from camera ${varname}, but no sensor configured found for update!`);
+        } else {
+            this.debug(`Received motion from camera ${varname}, ${sensors.length} configured triggers`);
+            for (const sensor of sensors) {
+                sensor.turnOnIfNotJustOff(this.config.resttime * 1000);
+                if (sensor.on) sensor.turnOffAfter(this.config.timeout * 1000);
             }
         }
-        if (!sensor){
-            this.debug(`Received motion from camera ${varname}, but no sensor configured found for update!`);
-            return;
-        }
-        if (sensor.on) {
-            sensor.turnOnIfNotJustOff(this.config.resttime * 1000);
-        }
-        if(sensor.on) sensor.turnOffAfter(this.config.timeout * 1000);
     }
 
     // method called synology, validates whether all accessories already exist and loads them if they do not
@@ -226,17 +291,14 @@ class SSSPlatform {
         this.log('initalizing platform');
         for (let camera in this.config.cameras) {
             camera = this.config.cameras[camera];
-            var exists = false;
-            for (let sensor in this.motionsensors) {
-                sensor = this.motionsensors[sensor];
-                if (sensor.varname == camera.varname) {
-                    exists = true;
+
+            let sensors = this.motionsensors.getByVarname(camera.varname);
+            if (sensors.length > 0) {
+                for (const sensor of sensors) {
                     this.log('found ' + sensor.accessory.displayName + ' from cache, skipping config');
                     sensor.accessory.reachable = true;
-                    break;
                 }
-            }
-            if (!exists) {
+            } else {
                 let uuid = UUIDGen.generate(camera.name);
                 let newAccessory = new Accessory(camera.name, uuid);
                 newAccessory.addService(Service.MotionSensor, camera.name);
