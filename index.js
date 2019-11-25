@@ -183,6 +183,10 @@ class SSSPlatform {
          * @type {number}
          */
         this.config.resttime = this.config.hasOwnProperty('resttime') ? this.config.resttime : 1;
+        /**
+         * @type {number}
+         */
+        this.config.timeout = this.config.hasOwnProperty('timeout') ? this.config.timeout : 30;
 
         this.port = this.config.port;
 
