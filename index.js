@@ -181,7 +181,6 @@ class SSSPlatform {
             req.on('end', () => {
                 url = require('url').parse(req.url,true); // will parse parameters into query string
                 triggeredCamera=url.query.varname;
-                this.log('Received motion from camera '+triggeredCamera);
                 if(triggeredCamera)
                     this.updateStateMotion(triggeredCamera);
                 else
