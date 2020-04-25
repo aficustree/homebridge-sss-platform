@@ -24,6 +24,13 @@
 				"default": 30,
         		"maximum": 120
 			},
+			"resttime": {
+				"title": "Rest Time",
+				"type": "integer",
+				"required": true,
+				"default": 1,
+        		"maximum": 3600
+			},
 			"cameras": {
                 "type": "array",
                 "title": "List of Cameras",
